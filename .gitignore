@@ -1,3 +1,9 @@
+# No vim swap files please
+*.swp
+
+#No temporay files
+*~
+
 *.py[co]
 
 # Packages
