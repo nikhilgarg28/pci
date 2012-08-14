@@ -1,3 +1,4 @@
+import myutils
 from sets import Set
 
 # Dummy data for testing purposes
@@ -44,12 +45,12 @@ def sim_distance(b1, b2):
     similarity = 1 / ( 1 + distance)
     return similarity
 
-print sim_distance(critics['Lisa Rose'], critics['Toby'])
-
 #Returns the Pearson correlation coefficient for bags b1 and b2
 def sim_pearson(b1, b2):
     common_features = get_common_features(b1, b2)
-    if len(common_features) == 0:
+    N = len(common_features)
+    if N == 0:
+        print 'Yes Im not finding commong features'
         return 0
 
     common_feature_vectors = [(b1[f], b2[f]) for f in common_features]
@@ -63,15 +64,11 @@ def sim_pearson(b1, b2):
     # Dot product of vectors v1 and v2
     dot = sum (x * y for x, y in zip(v1, v2))
 
-    N = len(common_features)
-
+    #Let's calculate numerator and denominator for pearson coefficient
     num = dot - (sum1 * sum2) / N
-
     from math import sqrt
     den = sqrt((mag1 - (sum1**2) / N) * (mag2 - (sum2**2) / N))
-
     if den == 0: return 0
-
     correlation = num / den
     return correlation
 
@@ -85,3 +82,30 @@ def most_similar(B, candidates, num = 5, similarity = sim_pearson):
     scores.sort()
     scores.reverse()
     return scores[:num]
+
+# Returns upto num number of features that I don't possess yet based on others
+def recommend_features(B, others, num = 5, similarity = sim_pearson):
+
+    #feature_scores stores the weighted total and total for that feature
+    from collections import defaultdict
+    import itertools
+    feature_scores = defaultdict(itertools.repeat((0,0)).next)
+
+    for other in others.values():
+        its_similarity = similarity(B, other)
+        for feature in other:
+            if feature not in B:
+                feature_scores[feature] = myutils.tupleadd(feature_scores[feature],
+                        (other[feature] * its_similarity, its_similarity))
+
+    ranked_features = [ (feature_scores[f][0] / feature_scores[f][1], f) for f
+            in feature_scores if feature_scores[f][1] != 0]
+    ranked_features.sort()
+    ranked_features.reverse()
+    return ranked_features[:num]
+
+me = critics['Toby']
+del critics['Toby']
+print recommend_features(me, critics)
+
+
