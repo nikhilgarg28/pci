@@ -1,4 +1,3 @@
-import myutils
 from sets import Set
 
 # Dummy data for testing purposes
@@ -89,20 +88,22 @@ def recommend_features(B, others, num = 5, similarity = sim_pearson):
     #feature_scores stores the weighted total and total for that feature
     from collections import defaultdict
     import itertools
-    feature_scores = defaultdict(itertools.repeat((0,0)).next)
+
+    total_scores = defaultdict(int)
+    weighted_scores = defaultdict(int)
 
     for other in others.values():
         its_similarity = similarity(B, other)
         for feature in other:
             if feature not in B:
-                feature_scores[feature] = myutils.tupleadd(feature_scores[feature],
-                        (other[feature] * its_similarity, its_similarity))
+                total_scores[feature] += its_similarity
+                weighted_scores[feature] += its_similarity * other[feature]
 
-    ranked_features = [ (feature_scores[f][0] / feature_scores[f][1], f) for f
-            in feature_scores if feature_scores[f][1] != 0]
-    ranked_features.sort()
-    ranked_features.reverse()
-    return ranked_features[:num]
+    feature_scores = [ (weighted_scores[f] / total, f) for f, total in
+            total_scores.items() if total != 0]
+    feature_scores.sort()
+    feature_scores.reverse()
+    return feature_scores[:num]
 
 me = critics['Toby']
 del critics['Toby']
