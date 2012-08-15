@@ -1,4 +1,5 @@
 from sets import Set
+from collections import defaultdict
 
 # Dummy data for testing purposes
 critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
@@ -85,15 +86,12 @@ def most_similar(B, candidates, num = 5, similarity = sim_pearson):
 # Returns upto num number of features that I don't possess yet based on others
 def recommend_features(B, others, num = 5, similarity = sim_pearson):
 
-    #feature_scores stores the weighted total and total for that feature
-    from collections import defaultdict
-    import itertools
-
     total_scores = defaultdict(int)
     weighted_scores = defaultdict(int)
 
     for other in others.values():
         its_similarity = similarity(B, other)
+        if its_similarity == 0: continue
         for feature in other:
             if feature not in B:
                 total_scores[feature] += its_similarity
@@ -101,12 +99,17 @@ def recommend_features(B, others, num = 5, similarity = sim_pearson):
 
     feature_scores = [ (weighted_scores[f] / total, f) for f, total in
             total_scores.items() if total != 0]
+
     feature_scores.sort()
     feature_scores.reverse()
     return feature_scores[:num]
 
-me = critics['Toby']
-del critics['Toby']
-print recommend_features(me, critics)
-
+# Given a bag of bag of features, it returs a new bag where old features become
+# bag and bag becomes features
+def invert_bag(B):
+    inverted_bag = defaultdict(dict)
+    for bag in B:
+        for feature in B[bag]:
+            inverted_bag[feature][bag] = B[bag][feature]
+    return dict(inverted_bag)
 
