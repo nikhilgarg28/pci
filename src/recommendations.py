@@ -17,10 +17,12 @@ critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
         'Just My Luck': 2.0, 'Superman Returns': 3.0, 'The Night Listener': 3.0,
         'You, Me and Dupree': 2.0},
     'Jack Matthews': {'Lady in the Water': 3.0, 'Snakes on a Plane': 4.0,
-        'The Night Listener': 3.0, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5},
-    'Toby': {'Snakes on a Plane':4.5,'You, Me and Dupree':1.0,'Superman Returns':4.0}
+        'The Night Listener': 3.0, 'Superman Returns': 5.0,
+        'You, Me and Dupree': 3.5},
+    'Toby': {'Snakes on a Plane':4.5,'You, Me and Dupree':1.0,
+        'Superman Returns':4.0}
     }
-
+print critics['Jack Matthews']
 #Returns a set of common features between bags b1 and b2
 def get_common_features(b1, b2):
     common_features = Set()
@@ -110,6 +112,8 @@ def invert_bag(B):
     inverted_bag = defaultdict(dict)
     for bag in B:
         for feature in B[bag]:
-            inverted_bag[feature][bag] = B[bag][feature]
+            value = B[bag][featue]
+            if value != 0:
+                inverted_bag[feature][bag] = B[bag][feature]
     return dict(inverted_bag)
 
