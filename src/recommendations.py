@@ -22,7 +22,6 @@ critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
     'Toby': {'Snakes on a Plane':4.5,'You, Me and Dupree':1.0,
         'Superman Returns':4.0}
     }
-print critics['Jack Matthews']
 #Returns a set of common features between bags b1 and b2
 def get_common_features(b1, b2):
     common_features = Set()
@@ -52,6 +51,7 @@ def sim_pearson(b1, b2):
     common_features = get_common_features(b1, b2)
     N = len(common_features)
     if N == 0:
+        print b1, b2
         print 'Yes Im not finding commong features'
         return 0
 
@@ -112,8 +112,21 @@ def invert_bag(B):
     inverted_bag = defaultdict(dict)
     for bag in B:
         for feature in B[bag]:
-            value = B[bag][featue]
+            value = B[bag][feature]
             if value != 0:
                 inverted_bag[feature][bag] = B[bag][feature]
     return dict(inverted_bag)
+
+# For each feature in the system, let's try to find most similar features
+def find_similar_features(B, num = 10):
+    similar_features = {}
+    #Firstly let's invert the bag to make it mappings from features to users
+    B = invert_bag(B)
+    for feature in B:
+        similar_features[feature] = most_similar(B[feature], B, num +
+                1)[1:num+1]
+
+    return similar_features
+# Sanity check
+print find_similar_features(critics)['Lady in the Water']
 
