@@ -1,5 +1,6 @@
 from sets import Set
 from collections import defaultdict
+import os
 
 # Dummy data for testing purposes
 critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
@@ -51,8 +52,8 @@ def sim_pearson(b1, b2):
     common_features = get_common_features(b1, b2)
     N = len(common_features)
     if N == 0:
-        print b1, b2
-        print 'Yes Im not finding commong features'
+        #print b1, b2
+        #print 'Yes Im not finding commong features'
         return 0
 
     common_feature_vectors = [(b1[f], b2[f]) for f in common_features]
@@ -122,11 +123,73 @@ def find_similar_features(B, num = 10):
     similar_features = {}
     #Firstly let's invert the bag to make it mappings from features to users
     B = invert_bag(B)
+    count = 0
     for feature in B:
+        print count
+        count += 1
         similar_features[feature] = most_similar(B[feature], B, num +
                 1)[1:num+1]
 
     return similar_features
 # Sanity check
-print find_similar_features(critics)['Lady in the Water']
+#print find_similar_features(critics)['Lady in the Water']
 
+def get_recommended_items(my_ratings, similar_items):
+    scores = defaultdict(float)
+    total_similarity = defaultdict(float)
+
+    #Loop over items that I've rated
+    for item, rating in my_ratings.items():
+
+        #Loop over items similar to this one
+        for similarity, other_item in similar_items[item]:
+            #ignore if user has already rating this item
+            if other_item in my_ratings: continue
+
+            #Weighted sum of ratings times similarity and sum of similarities
+            scores[other_item] += similarity * rating
+            total_similarity[other_item] += similarity
+
+    # Divide each weigted score by corresponding total score to get average
+    rankings = [ (score / total_similarity[item], item) for item, score in
+            scores.items() if total_similarity[item] != 0]
+
+    #Return the rankings from highest to lowest
+    rankings.sort()
+    rankings.reverse()
+    return rankings
+
+#Sanity check
+#similar_items = find_similar_features(critics)
+#print get_recommended_items(critics['Toby'], similar_items)
+
+#Load the data from movie lens
+
+def load_movie_lens_data(relative_path = '../data/ml-100K'):
+    absolute_path = os.path.normpath(os.path.join(os.getcwd(), relative_path))
+
+    #Firstly, let's find out movie titles for movie ids
+    movies = {}
+    for line in open(absolute_path + '/u.item'):
+        (id, title) = line.split('|')[0:2]
+        movies[id] = title
+
+    # Load ratings
+    ratings = defaultdict(dict)
+    for line in open(absolute_path + '/u.data'):
+        (user, movie_id, rating, ts) = line.split('\t')
+        ratings[user][movies[movie_id]] = float(rating)
+
+    return ratings
+
+
+#Sanity check
+#ratings = load_movie_lens_data()
+#print ratings
+
+#Let's find recommended items using user based filtering
+#print recommend_features(ratings['87'], ratings, num = 20)
+
+#Let's calculate item similarities
+#similar_items = find_similar_features(ratings, num = 50)
+#print similar_items
